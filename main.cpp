@@ -1,11 +1,16 @@
-
-#include "calculator.hpp"
+#include "spusk_func.hpp"
+#include "graphic.hpp"
+#include "diff_func.hpp"
 
 int main ()
 {
-    char *hui = "10*(30+20*10)+13$";
+    char *hui = (char *)"a+1$";
     char **s = &hui;
-    fprintf (stderr, "%d\n", getG(s));
-
+    node_t *tree_hui = getG (s);
+    node_t *diff_hui = Differentiation (tree_hui, "a");
+    GraphVizDump (tree_hui);
+    GraphVizDump (diff_hui);
+    Destructor (tree_hui);
+    Destructor (diff_hui);
     return 0;
 }

@@ -1,122 +1,245 @@
 #include "diff_func.hpp"
-#include "extraction.hpp"
 
-
-node_t *ReadNode (FILE *stream, char *buffer, size_t * pos)
+node_t *NodeCopy (node_t *origin)
 {
-    // char *buffer = (char *)calloc (file_length (stream), sizeof (char));
-    // file_to_buffer (stream, buffer);
-    char *temp = (char *)calloc (MAX_OPERATOR_SIZE, sizeof (char));
-    sscanf (buffer, "%s", temp);
-}
-
-node_t *CreateNode (node_t *parent, node_t *left, node_t *right, type new_node_type, data new_node_value)
-{
-    node_t *new_node = (node_t *)calloc (1, sizeof (node_t));
-    new_node->left = NULL;
-    new_node->parent = NULL;
-    new_node->right = NULL;
-    new_node->node_type = new_node_type;
-    new_node->node_value = new_node_value;
-    return new_node;
-}
-
-node_t *getP (char **s)
-{
-    node_t *value = NULL;
-    if (**s == '(')
+    node_t *new_root = (node_t *)calloc (1, sizeof(node_t));
+    new_root->parent = NULL;
+    new_root->node_type = origin->node_type;
+    switch (origin->node_type)
     {
-        (*s)++;
-        value = getE (s);
-        if (**s != ')') assert(0);
-        (*s)++;
-        return value;
+        case OPERATOR:
+            new_root->node_value.oper = origin->node_value.oper;
+            break;
+        case CONST:
+            new_root->node_value.value = origin->node_value.value;
+            break;
+        case VARIABLE:
+        {
+            char *new_var = (char *)calloc (30, 1);
+            MyStrcpy (origin->node_value.variable, new_var);
+            new_root->node_value.variable = new_var;
+            break;
+        }
+        default:
+            assert (0);
+            break;
     }
-    else return getN (s);
+    fprintf (stderr, "meeeeeeeeeew\n");
+    if (origin->left != NULL) new_root->left = NodeCopy (origin->left);
+    else new_root->left = NULL;
+    if (origin->right != NULL) new_root->right = NodeCopy (origin->right);
+    else new_root->right = NULL;
+    return new_root;
+
 }
-
-node_t *getT (char **s)
+node_t *Differentiation (node_t *origin, char const *diff_var)
 {
+    assert (origin != NULL);
+    assert (diff_var != NULL);
 
-    node_t *value = getP(s);
-    while (**s == '*' || **s == '/')
+    switch (origin->node_type)
     {
-        int op = **s;
-        (*s)++;
-        node_t *value_2 = getP (s);
-        if (op == '*') 
-        {
-            data oper;
-            oper.op_str = MUL; 
-            node_t *new_node = CreateNode (NULL, value, value_2, OPERATOR, oper);
-        }
-        else
-        {
-            data oper;
-            oper.op_str = DIV; 
-            node_t *new_node = CreateNode (NULL, value, value_2, OPERATOR, oper);
-        }
+        case CONST:
+            return DiffConst();
+            break;
+        case VARIABLE:
+            return DiffVar (origin, diff_var);
+            break;
+        case OPERATOR:
+            {
+                switch (origin->node_value.oper)
+                {
+                    case ADD:
+                        return DiffLin (origin);
+                        break;
+                    case SUB:
+                        return DiffLin (origin);
+                        break;
+                    case MUL:
+                        return DiffMul (origin);
+                        break;
+                    case DIV:
+                        return DiffDiv (origin);
+                        break;
+                    case EXP:
+                        return DiffExp (origin);
+                        break;
+                    case SIN:
+                        return DiffSin (origin);
+                        break;
+                    case COS:
+                        return DiffCos (origin);
+                        break;
+                    default:
+                        assert (0);
+                }
+                break;
+            }
+        default:
+            assert (0);
+            break;
     }
-    return value;
-}
+} 
 
-node_t *getE (char **s)
+node_t *DiffLin (node_t *original_node)
 {
-    node_t *value = getT(s);
-    fprintf(stderr, "GetE outer value from GetT", value);
-    while (**s == '+' || **s == '-')
+    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
+    if (original_node->node_value.oper == ADD)
     {
-        fprintf(stderr, "GetE: %p\n", *s);
-        int op = **s;
-        (*s)++;
-        node_t *value_2 = getT (s);
-        if (op == '+')
-        {
-            data oper;
-            oper.op_str = ADD; 
-            node_t *new_node = CreateNode (NULL, value, value_2, OPERATOR, oper);
-        }
-        else
-        {
-            data oper;
-            oper.op_str = SUB; 
-            node_t *new_node = CreateNode (NULL, value, value_2, OPERATOR, oper);
-        }
+        current_node->node_type = OPERATOR;
+        current_node->node_value.oper = ADD;
+        current_node->left = Differentiation (original_node->left, NONE);
+        current_node->right = Differentiation (original_node->right, NONE);
     }
-    return value;
-}
-
-node_t *getN (char **s)
-{
-
-    fprintf (stderr, "GetN outer: %p\n", *s);
-    bool found_any = false;
-    int value = 0;
-    while (**s >= '0' && **s <= '9')
+    else
     {
-        found_any = true;
-        value = value *10 + (**s - '0');
-        (*s)++;
-        fprintf (stderr, "GetN while: %p\n", *s);
+        current_node->node_type = OPERATOR;
+        current_node->node_value.oper = SUB;
+        current_node->left = Differentiation (original_node->left, NONE);
+        current_node->right = Differentiation (original_node->right, NONE);
     }
-    if (!found_any) assert(0);
-    node_t *new_node = (node_t *)calloc (1, sizeof (node_t));
-    new_node->left = NULL;
-    new_node->parent = NULL;
-    new_node->right = NULL;
-    new_node->node_type =  CONST;
-    new_node->node_value.value = value;
-    fprintf (stderr, "mew\n");
-    return new_node;
+    return current_node;
 }
 
-node_t *getG (char **s)
+node_t *DiffMul (node_t *original_node)
 {
-    node_t *value = getE(s);
-    fprintf(stderr, "GetG value: %d\n", value);
-    if (**s != '$') assert(0);
-    return value;
+    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
+    current_node->node_type = OPERATOR;
+    current_node->node_value.oper = ADD;
+    current_node->left = (node_t *)calloc (1, sizeof (node_t));
+    current_node->left->node_type = OPERATOR;
+    current_node->left->node_value.oper = MUL;
+    current_node->left->parent = NULL;
+    current_node->left->left = NodeCopy (original_node->left);
+    current_node->left->right = Differentiation (original_node->right, NONE);
+
+    current_node->right = (node_t *)calloc (1, sizeof (node_t));
+    current_node->right->node_type = OPERATOR;
+    current_node->right->node_value.oper = MUL;
+    current_node->right->parent = NULL;
+    current_node->right->left = Differentiation (original_node->left, NONE);
+    current_node->right->right = NodeCopy (original_node->right);
+    return current_node;
 }
 
+node_t *DiffDiv (node_t *original_node)
+{
+    assert (original_node != NULL);
 
+    node_t *new_root = (node_t *)calloc (1, sizeof (node_t));
+    new_root->node_type = OPERATOR;
+    new_root->node_value.oper = DIV;
+    new_root->parent = NULL;
+    new_root->right = (node_t *)calloc (1, sizeof (node_t));
+    new_root->left = (node_t *)calloc (1, sizeof (node_t));
+    new_root->right->node_type = OPERATOR;
+    new_root->right->node_value.oper = MUL;
+    new_root->right->parent = NULL;
+    new_root->right->right = NodeCopy (original_node->right);
+    new_root->right->left = NodeCopy (original_node->right);
 
+    new_root->left->node_type = OPERATOR;
+    new_root->left->node_value.oper = SUB;
+    new_root->left->parent = NULL;
+
+    new_root->left->left = (node_t *)calloc (1, sizeof (node_t));
+    new_root->left->left->node_type = OPERATOR;
+    new_root->left->left->node_value.oper = MUL;
+    new_root->left->left->parent = NULL;
+    new_root->left->left->left = Differentiation (original_node->left, NONE);
+    new_root->left->left->right = NodeCopy (original_node->right);
+
+    new_root->left->right = (node_t *)calloc (1, sizeof (node_t));
+    new_root->left->right->node_type = OPERATOR;
+    new_root->left->right->node_value.oper = MUL;
+    new_root->left->right->parent = NULL;
+    new_root->left->right->left = Differentiation (original_node->right, NONE);
+    new_root->left->right->right = NodeCopy (original_node->left);
+    return new_root;
+}
+
+node_t *DiffSin (node_t *original_node)
+{
+    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
+    current_node->node_type = OPERATOR;
+    current_node->node_value.oper = MUL;
+
+    current_node->left = (node_t *)calloc (1, sizeof (node_t));
+    current_node->left->node_type = OPERATOR;
+    current_node->left->node_value.oper = COS;
+    current_node->left->parent = NULL;
+    current_node->left->right = NodeCopy (original_node->right);
+    current_node->left->left = NULL;
+
+    current_node->right = Differentiation (original_node->right, NONE);
+    return current_node;
+}
+
+node_t *DiffCos (node_t *original_node)
+{
+    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
+    current_node->node_type = OPERATOR;
+    current_node->node_value.oper = MUL;
+    
+    current_node->left = (node_t *)calloc (1, sizeof (node_t));
+    current_node->left->node_type = CONST;
+    current_node->left->node_value.value = -1;
+    current_node->left->parent = NULL;
+    current_node->left->right = NULL;
+    current_node->left->left = NULL;
+
+    current_node->right = (node_t *)calloc (1, sizeof (node_t));
+    current_node->right->node_type = OPERATOR;
+    current_node->right->node_value.oper = MUL;
+    current_node->right->parent = NULL;
+    current_node->right->right = Differentiation (original_node->right, NONE);
+
+    current_node->right->left = (node_t *)calloc (1, sizeof (node_t));
+    current_node->right->left->node_type = OPERATOR;
+    current_node->right->left->node_value.oper = SIN;
+    current_node->right->left->parent = NULL;
+    current_node->right->left->left = NULL;
+    current_node->right->left->right = NodeCopy (current_node->right);
+    return current_node;
+}
+
+node_t *DiffExp (node_t *original_node)
+{
+    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
+    current_node->node_type = OPERATOR;
+    current_node->node_value.oper = MUL;
+    current_node->parent = NULL;
+    current_node->left = NodeCopy (original_node);
+    current_node->right = Differentiation (original_node->right, NONE);
+    return current_node;
+}
+
+node_t *DiffVar (node_t *original_node, char const *differ_var)
+{
+    if (MyStrncmp (original_node->node_value.variable, differ_var, MyStrlen (differ_var)) != 0) 
+    {
+        fprintf (stderr, "%s\n", original_node->node_value.variable);
+        return NodeCopy (original_node);
+    }
+    else 
+    {
+        node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
+        current_node->node_type = CONST;
+        current_node->node_value.value = 1;
+        current_node->parent = NULL;
+        current_node->left = NULL;
+        current_node->right = NULL;
+        return current_node;
+    }
+}
+
+node_t *DiffConst ()
+{
+    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
+    current_node->node_type = CONST;
+    current_node->node_value.value = 0;
+    current_node->parent = NULL;
+    current_node->left = NULL;
+    current_node->right = NULL;
+    return current_node;
+}
