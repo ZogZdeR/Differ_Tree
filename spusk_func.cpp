@@ -103,7 +103,6 @@ node_t *getN (char **s)
     new_node->right = NULL;
     new_node->node_type =  CONST;
     new_node->node_value.value = value;
-    fprintf (stderr, "mew\n");
     return new_node;
 }
 
@@ -123,7 +122,6 @@ node_t *getF (char **s)
             const char *temp = *s;
             if (MyStrncmp (temp, functions_structure[i].name, (size_t)MyStrlen (functions_structure[i].name)) == 0)
             {
-                fprintf (stderr, "mewmew\n");
                 data function_realisation;
                 function_realisation.oper = functions_structure[i].oper_enum;
                 (*s) += MyStrlen (functions_structure[i].name);

@@ -4,13 +4,15 @@
 
 int main ()
 {
-    char *hui = (char *)"a+1$";
+    char *hui = (char *)"EXP(x)/1$";
     char **s = &hui;
     node_t *tree_hui = getG (s);
-    node_t *diff_hui = Differentiation (tree_hui, "a");
+    // node_t *diff_hui = Differentiation (tree_hui, "a");
     GraphVizDump (tree_hui);
-    GraphVizDump (diff_hui);
+    Simplifier (tree_hui);
+    GraphVizDump (tree_hui);
+    // GraphVizDump (diff_hui);
     Destructor (tree_hui);
-    Destructor (diff_hui);
+    // Destructor (diff_hui);
     return 0;
 }
