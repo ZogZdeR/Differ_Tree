@@ -1,17 +1,19 @@
 #include "spusk_func.hpp"
 #include "graphic.hpp"
 #include "diff_func.hpp"
+#include "dump_functions.hpp"
 
 int main ()
 {
-    char *hui = (char *)"EXP(x)/1$";
+    char *hui = (char *)"a+1$";
     char **s = &hui;
     node_t *tree_hui = getG (s);
     // node_t *diff_hui = Differentiation (tree_hui, "a");
     GraphVizDump (tree_hui);
-    Simplifier (tree_hui);
-    GraphVizDump (tree_hui);
+    // Simplifier (tree_hui);
+    // GraphVizDump (tree_hui);
     // GraphVizDump (diff_hui);
+    DumpToLaTex (tree_hui);
     Destructor (tree_hui);
     // Destructor (diff_hui);
     return 0;

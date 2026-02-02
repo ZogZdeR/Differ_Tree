@@ -51,7 +51,7 @@ struct function_struct_t
     oper_t oper_enum;
 };
 
-static function_struct_t functions_structure[FUNCTIONS_QUANTITY] = 
+static function_struct_t functions_structure[FUNCTIONS_QUANTITY] = // is_used, problem of compiler
 {
     "+",     ADD,
     "-",     SUB,

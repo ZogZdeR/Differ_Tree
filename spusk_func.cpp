@@ -186,7 +186,7 @@ void Destructor (node_t *node)
     }
     if (node->node_type == VARIABLE)
     {
-        free ((void *)node->node_value.variable);
+        free ((char *)node->node_value.variable);
         node->node_value.variable = NULL;
     }
     free (node);
