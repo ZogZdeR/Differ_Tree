@@ -8,7 +8,6 @@
 #include "string_functions.hpp"
 #include "spusk_func.hpp"
 
-static char const *TEX_FILE = "dump.tex";
 
 const char LATEX_COMAND[][40] =
 {

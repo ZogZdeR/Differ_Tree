@@ -18,7 +18,7 @@ node_t *CreateNode (node_t *parent, node_t *left, node_t *right, type new_node_t
     return new_node;
 }
 
-node_t *getP (char **s)
+node_t *getP (char const **s)
 {
     node_t *value = NULL;
     if (**s == '(')
@@ -32,7 +32,7 @@ node_t *getP (char **s)
     else return getF (s);
 }
 
-node_t *getT (char **s)
+node_t *getT (char const **s)
 {
 
     node_t *value = getP(s);
@@ -61,7 +61,7 @@ node_t *getT (char **s)
     return value;
 }
 
-node_t *getE (char **s)
+node_t *getE (char const **s)
 {
     node_t *value = getT(s);
     while (**s == '+' || **s == '-')
@@ -86,7 +86,7 @@ node_t *getE (char **s)
     return value;
 }
 
-node_t *getN (char **s)
+node_t *getN (char const **s)
 {
     bool found_any = false;
     int value = 0;
@@ -106,14 +106,14 @@ node_t *getN (char **s)
     return new_node;
 }
 
-node_t *getG (char **s)
+node_t *getG (char const **s)
 {
     node_t *value = getE(s);
     if (**s != '$') assert(0);
     return value;
 }
 
-node_t *getF (char **s)
+node_t *getF (char const **s)
 {
     if ((**s >= 'a' && **s <= 'z') || (**s >= 'A' && **s <= 'Z') || (**s == '^'))
     {
@@ -135,9 +135,9 @@ node_t *getF (char **s)
     return getN (s);
 }
 
-node_t *getV (char **s)
+node_t *getV (char const **s)
 {
-    char **beg = s;
+    char const **beg = s;
     bool found_any = false;
     char *var = (char *)calloc (30, 1);
     if ((**beg >= 'a' && **beg <= 'z') || (**beg >= 'A' && **beg <= 'Z'))
@@ -167,7 +167,7 @@ node_t *getV (char **s)
         new_node->parent = NULL;
         new_node->right = NULL;
         new_node->node_type =  VARIABLE;
-        new_node->node_value.variable = (char const *)var;
+        new_node->node_value.variable = var;
         return (new_node);
     }
 }

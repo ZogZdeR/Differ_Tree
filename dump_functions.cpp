@@ -1,6 +1,7 @@
 #include "dump_functions.hpp"
 #include "spusk_func.hpp"
 
+char const *TEX_FILE = "dump.tex";
 
 int DumpToLaTex (node_t* node)
 {

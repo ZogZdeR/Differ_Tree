@@ -15,6 +15,9 @@ node_t *DiffCos (node_t *original_node, char const *diff_var);
 node_t *DiffExp (node_t *original_node, char const *diff_var);
 node_t *DiffVar (node_t *original_node, char const *differ_var);
 node_t *DiffConst ();
+node_t *DiffTan (node_t *original_node, char const *diff_var);
+node_t *DiffCTan (node_t *original_node, char const *diff_var);
+node_t *DiffLn (node_t *original_node, char const *diff_var);
 
 void Simplifier (node_t *node);
 size_t NodesCounter (node_t *node);

@@ -1,35 +1,6 @@
 #include "graphic.hpp"
 
-void GraphVizDump (node_t *node)
-{
-    assert (node != NULL);
-
-    FILE *dot_file_stream = fopen(graph_dot, "w"); 
-    assert (dot_file_stream != NULL);
-
-    static size_t dump_quantity = 0;
-
-    fprintf (dot_file_stream, "digraph {\n");
-    fprintf (dot_file_stream, "nodestep = 1;\n");
-    fprintf (dot_file_stream, "splines = ortho;\n");
-
-    GraphVizNodeInitialise (dot_file_stream, node);
-
-    fprintf (dot_file_stream, "\n");
-
-    GraphVizRoadsInitialise (dot_file_stream, node);
-    fprintf (dot_file_stream, "\n}");
-
-    fclose(dot_file_stream );
-
-    char *some_buffer = (char *)calloc (system_buffer_size, sizeof (char));
-    assert (some_buffer != NULL);
-
-    dump_quantity++;
-    snprintf (some_buffer, system_buffer_size, "dot -Tpng graph.dot -o graph%zu.png", dump_quantity);
-    system (some_buffer);
-    free (some_buffer);
-}
+char const *graph_dot = "graph.dot";
 
 void GraphVizNodeInitialise (FILE *stream, node_t *node)
 {
@@ -78,4 +49,35 @@ void GraphVizRoadsInitialise (FILE *stream, node_t *node)
         if (node->right != NULL) 
             GraphVizRoadsInitialise (stream, node->right);
     }
+}
+
+void GraphVizDump (node_t *node)
+{
+    assert (node != NULL);
+
+    FILE *dot_file_stream = fopen(graph_dot, "w"); 
+    assert (dot_file_stream != NULL);
+
+    static size_t dump_quantity = 0;
+
+    fprintf (dot_file_stream, "digraph {\n");
+    fprintf (dot_file_stream, "nodestep = 1;\n");
+    fprintf (dot_file_stream, "splines = ortho;\n");
+
+    GraphVizNodeInitialise (dot_file_stream, node);
+
+    fprintf (dot_file_stream, "\n");
+
+    GraphVizRoadsInitialise (dot_file_stream, node);
+    fprintf (dot_file_stream, "\n}");
+
+    fclose(dot_file_stream );
+
+    char *some_buffer = (char *)calloc (system_buffer_size, sizeof (char));
+    assert (some_buffer != NULL);
+
+    dump_quantity++;
+    snprintf (some_buffer, system_buffer_size, "dot -Tpng graph.dot -o graph%zu.png", dump_quantity);
+    system (some_buffer);
+    free (some_buffer);
 }

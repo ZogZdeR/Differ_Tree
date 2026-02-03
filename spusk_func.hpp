@@ -41,7 +41,7 @@ enum oper_t
 union data
 {
     data_t value;
-    char const *variable;
+    char *variable;
     oper_t oper;  
 };
 
@@ -51,7 +51,7 @@ struct function_struct_t
     oper_t oper_enum;
 };
 
-static function_struct_t functions_structure[FUNCTIONS_QUANTITY] = // is_used, problem of compiler
+function_struct_t static functions_structure[FUNCTIONS_QUANTITY] = // is_used, problem of compiler
 {
     "+",     ADD,
     "-",     SUB,
@@ -80,13 +80,13 @@ struct node_t
 };
 
 node_t *CreateNode (node_t *parent, node_t *left, node_t *right, type new_node_type, data new_node_value);
-node_t *getN (char **s);
-node_t *getP (char **s);
-node_t *getT (char **s);
-node_t *getE (char **s);
-node_t *getG (char **s);
-node_t *getF (char **s);
-node_t *getV (char **s);
+node_t *getN (char const **s);
+node_t *getP (char const **s);
+node_t *getT (char const **s);
+node_t *getE (char const **s);
+node_t *getG (char const **s);
+node_t *getF (char const **s);
+node_t *getV (char const **s);
 void Destructor (node_t *node);
 
 #endif // SPUSK_FUNC
