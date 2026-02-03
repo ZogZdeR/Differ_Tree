@@ -9,12 +9,12 @@ int main ()
     char const **s = &hui;
     node_t *tree_hui = getG (s);
     GraphVizDump (tree_hui);
-    // Simplifier (tree_hui);
     // GraphVizDump (tree_hui);
     node_t *diff_hui = Differentiation (tree_hui, "x");
-    GraphVizDump (diff_hui);
+    Simplifier (diff_hui);
     DumpToLaTex (tree_hui);
     DumpToLaTex (diff_hui);
+    GraphVizDump (diff_hui);
     Destructor (tree_hui);
     Destructor (diff_hui);
     return 0;

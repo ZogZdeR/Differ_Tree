@@ -55,7 +55,7 @@ void GraphVizDump (node_t *node)
 {
     assert (node != NULL);
 
-    FILE *dot_file_stream = fopen(graph_dot, "w"); 
+    FILE *dot_file_stream = fopen (graph_dot, "w"); 
     assert (dot_file_stream != NULL);
 
     static size_t dump_quantity = 0;
@@ -71,7 +71,7 @@ void GraphVizDump (node_t *node)
     GraphVizRoadsInitialise (dot_file_stream, node);
     fprintf (dot_file_stream, "\n}");
 
-    fclose(dot_file_stream );
+    fclose(dot_file_stream);
 
     char *some_buffer = (char *)calloc (system_buffer_size, sizeof (char));
     assert (some_buffer != NULL);

@@ -1,12 +1,6 @@
 #include "spusk_func.hpp"
 #include "extraction.hpp"
 
-
-/*node_t *ReadNode (FILE *stream, char *buffer, size_t *pos)
-{
-    
-}*/
-
 node_t *CreateNode (node_t *parent, node_t *left, node_t *right, type new_node_type, data new_node_value)
 {
     node_t *new_node = (node_t *)calloc (1, sizeof (node_t));
@@ -35,7 +29,7 @@ node_t *getP (char const **s)
 node_t *getT (char const **s)
 {
 
-    node_t *value = getP(s);
+    node_t *value = getP (s);
     while (**s == '*' || **s == '/' || **s == '^')
     {
         data oper;
@@ -63,7 +57,7 @@ node_t *getT (char const **s)
 
 node_t *getE (char const **s)
 {
-    node_t *value = getT(s);
+    node_t *value = getT (s);
     while (**s == '+' || **s == '-')
     {
         data oper;
@@ -108,7 +102,7 @@ node_t *getN (char const **s)
 
 node_t *getG (char const **s)
 {
-    node_t *value = getE(s);
+    node_t *value = getE (s);
     if (**s != '$') assert(0);
     return value;
 }

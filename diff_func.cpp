@@ -1,4 +1,5 @@
 #include "diff_func.hpp"
+#include "graphic.hpp"
 
 node_t *NodeCopy (node_t *origin)
 {
@@ -66,6 +67,9 @@ node_t *Differentiation (node_t *origin, char const *diff_var)
                     case EXP:
                         return DiffExp (origin, diff_var);
                         break;
+                    case DEG:
+                        return DiffDeg (origin, diff_var);
+                        break;
                     case SIN:
                         return DiffSin (origin, diff_var);
                         break;
@@ -78,6 +82,8 @@ node_t *Differentiation (node_t *origin, char const *diff_var)
                     case CTAN:
                         return DiffCTan (origin, diff_var);
                         break;
+                    case ATAN:
+                        return DiffATan (origin, diff_var);
                     default:
                         assert (0);
                 }
@@ -189,12 +195,7 @@ node_t *DiffCos (node_t *original_node, char const *diff_var)
     current_node->node_type = OPERATOR;
     current_node->node_value.oper = MUL;
     
-    current_node->left = (node_t *)calloc (1, sizeof (node_t));
-    current_node->left->node_type = CONST;
-    current_node->left->node_value.value = -1;
-    current_node->left->parent = NULL;
-    current_node->left->right = NULL;
-    current_node->left->left = NULL;
+    current_node->left = ConstMaker (-1);
 
     current_node->right = (node_t *)calloc (1, sizeof (node_t));
     current_node->right->node_type = OPERATOR;
@@ -226,30 +227,17 @@ node_t *DiffVar (node_t *original_node, char const *differ_var)
 {
     if (MyStrncmp (original_node->node_value.variable, differ_var, (size_t)MyStrlen (differ_var)) != 0) 
     {
-        fprintf (stderr, "%s\n", original_node->node_value.variable);
         return NodeCopy (original_node);
     }
     else 
     {
-        node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-        current_node->node_type = CONST;
-        current_node->node_value.value = 1;
-        current_node->parent = NULL;
-        current_node->left = NULL;
-        current_node->right = NULL;
-        return current_node;
+        return ConstMaker (1);
     }
 }
 
 node_t *DiffConst ()
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    current_node->node_type = CONST;
-    current_node->node_value.value = 0;
-    current_node->parent = NULL;
-    current_node->left = NULL;
-    current_node->right = NULL;
-    return current_node;
+    return ConstMaker (0);
 }
 
 node_t *DiffTan (node_t *original_node, char const *diff_var)
@@ -262,14 +250,8 @@ node_t *DiffTan (node_t *original_node, char const *diff_var)
     current_node->left->node_type = OPERATOR;
     current_node->left->node_value.oper = DIV;
     current_node->left->parent = NULL;
-    current_node->left->left = (node_t *)calloc (1, sizeof (node_t));
+    current_node->left->left = ConstMaker (1);
     current_node->left->right = (node_t *)calloc (1, sizeof (node_t));
-
-    current_node->left->left->node_type = CONST;
-    current_node->left->left->node_value.value = 1;
-    current_node->left->left->parent = NULL;
-    current_node->left->left->right = NULL;
-    current_node->left->left->left = NULL;
 
     current_node->left->right->node_type = OPERATOR;
     current_node->left->right->node_value.oper = MUL;
@@ -303,14 +285,8 @@ node_t *DiffCTan (node_t *original_node, char const *diff_var)
     current_node->left->node_type = OPERATOR;
     current_node->left->node_value.oper = DIV;
     current_node->left->parent = NULL;
-    current_node->left->left = (node_t *)calloc (1, sizeof (node_t));
+    current_node->left->left = ConstMaker (-1);
     current_node->left->right = (node_t *)calloc (1, sizeof (node_t));
-
-    current_node->left->left->node_type = CONST;
-    current_node->left->left->node_value.value = -1;
-    current_node->left->left->parent = NULL;
-    current_node->left->left->right = NULL;
-    current_node->left->left->left = NULL;
 
     current_node->left->right->node_type = OPERATOR;
     current_node->left->right->node_value.oper = MUL;
@@ -345,21 +321,83 @@ node_t *DiffLn (node_t *original_node, char const *diff_var)
     current_node->left->node_type = OPERATOR;
     current_node->left->node_value.oper = DIV;
     current_node->left->parent = NULL;
-    current_node->left->left = (node_t *)calloc (1, sizeof (node_t));
+    current_node->left->left = ConstMaker (1);
     current_node->left->right = NodeCopy (original_node->right);
-
-    current_node->left->left->node_type = CONST;
-    current_node->left->left->node_value.value = 1;
-    current_node->left->left->parent = NULL;
-    current_node->left->left->left = NULL;
-    current_node->left->left->right = NULL;
 
     current_node->right = Differentiation (original_node->right, diff_var); 
     return (current_node);
 }
 
+node_t *DiffDeg (node_t *original_node, char const *diff_var)
+{
+    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
+    current_node->node_type = OPERATOR;
+    current_node->node_value.oper = MUL;
+    current_node->parent = NULL;
+    current_node->left = NodeCopy (original_node);
+    current_node->right = NULL; // Initialising soon
+
+    node_t *degree = (node_t *)calloc (1, sizeof (node_t));
+    degree->node_type = OPERATOR;
+    degree->node_value.oper = MUL;
+    degree->parent = NULL;
+    degree->right = NodeCopy (original_node->right);
+    degree->left = (node_t *)calloc (1, sizeof (node_t));
+    degree->left->node_type = OPERATOR;
+    degree->left->node_value.oper = LN;
+    degree->left->parent = NULL;
+    degree->left->left = NULL;
+    degree->left->right = NodeCopy (original_node->left);
+
+    node_t *diff_degree = Differentiation (degree, diff_var);
+    current_node->right = diff_degree;
+    Destructor (degree);
+    return (current_node);
+}
+
+node_t *DiffATan (node_t *original_node, char const *diff_var)
+{
+    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
+    current_node->left = Differentiation (original_node->right, diff_var);
+    current_node->node_type = OPERATOR;
+    current_node->node_value.oper = MUL;
+    current_node->parent = NULL;
+    current_node->right = (node_t *)calloc (1, sizeof (node_t));
+
+    current_node->right->node_type = OPERATOR;
+    current_node->right->node_value.oper = DIV;
+    current_node->right->parent = NULL;
+    current_node->right->left = ConstMaker (1);
+    current_node->right->right = (node_t *)calloc (1, sizeof (node_t));
+
+    current_node->right->right->node_type = OPERATOR;
+    current_node->right->right->node_value.oper = ADD;
+    current_node->right->right->parent = NULL;
+    current_node->right->right->left = ConstMaker (1);
+    current_node->right->right->right = (node_t *)calloc (1, sizeof (node_t));
+    current_node->right->right->right->node_type = OPERATOR;
+    current_node->right->right->right->node_value.oper = DEG;
+    current_node->right->right->right->parent = NULL;
+    current_node->right->right->right->right = ConstMaker (2);
+    current_node->right->right->right->left = NodeCopy (original_node->right);
+    return (current_node);
+}
+
+
+node_t *ConstMaker (data_t constant)
+{
+    node_t *node = (node_t *)calloc (1, sizeof (node_t));
+    node->node_type = CONST;
+    node->node_value.value = constant;
+    node->parent = NULL;
+    node->right = NULL;
+    node->left = NULL;
+    return node;
+}
 void Simplifier (node_t *node)
 {
+    assert (node != NULL);
+
     size_t beginning_nodes_quantity = 0;
     size_t ending_nodes_quantity = 0;
     bool is_changed = true;
@@ -374,6 +412,8 @@ void Simplifier (node_t *node)
 
 size_t NodesCounter (node_t *node)
 {
+    assert (node != NULL);
+
     size_t quantity = 1;
     if (node->left != NULL) quantity += NodesCounter (node->left);
     if (node->right != NULL) quantity += NodesCounter (node->right);
@@ -512,10 +552,8 @@ void SimplifyMul (node_t *node)
     else if ((node->left->node_type == CONST && node->left->node_value.value == 0) || 
         (node->right->node_type == CONST && node->right->node_value.value == 0))
     {
-        if (node->left->node_type == VARIABLE) free ((char *)node->left->node_value.variable);
-        free (node->left);
-        if (node->right->node_type == VARIABLE) free ((char *)node->right->node_value.variable);
-        free (node->right);
+        Destructor (node->right);
+        Destructor (node->left);
         node->node_type = CONST;
         node->node_value.value = 0;
         node->right = NULL;
@@ -546,4 +584,20 @@ void SimplifyDiv (node_t *node)
         node->left = new_l;
         node->right = new_r;
     }
+}
+
+node_t *DifferentiationOfNDegree (node_t *origin, size_t n, char const *diff_var)
+{
+    assert (origin != NULL);
+    assert (diff_var != NULL);
+
+    node_t *safe_to_loose_origin = NodeCopy (origin);
+    return DiffN (safe_to_loose_origin, n, diff_var);
+}
+node_t *DiffN (node_t *origin, size_t n, char const *diff_var)
+{
+    if (n == 0) return NodeCopy (origin);
+    node_t *exect_diff = Differentiation (origin, diff_var);
+    Destructor (origin);
+    return DiffN (exect_diff, n-1, diff_var);
 }

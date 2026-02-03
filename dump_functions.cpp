@@ -41,7 +41,7 @@ int DumpNodeLaTex (node_t* node, FILE* stream)
 
     if (node->left) DumpNodeLaTex (node->left, stream);
 
-    if (node->node_type == OPERATOR) fprintf (stream, " %s ", LATEX_COMAND[node->node_value.oper]);
+    if (node->node_type == OPERATOR) fprintf (stream, " %s ", LATEX_COMAND[node->node_value.oper - 1]);
     else if (node->node_type == VARIABLE) fprintf (stream, " %s ", node->node_value.variable);
     else
     {
