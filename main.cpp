@@ -5,14 +5,14 @@
 
 int main ()
 {
-    char const *hui = "LN(x)$";
+    char const *hui = "COS(15+2*x)$";
     char const **s = &hui;
     node_t *tree_hui = getG (s);
     GraphVizDump (tree_hui);
     // GraphVizDump (tree_hui);
     node_t *diff_hui = Differentiation (tree_hui, "x");
+    GraphVizDump (diff_hui);
     Simplifier (diff_hui);
-    DumpToLaTex (tree_hui);
     DumpToLaTex (diff_hui);
     GraphVizDump (diff_hui);
     Destructor (tree_hui);

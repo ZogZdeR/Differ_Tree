@@ -208,7 +208,7 @@ node_t *DiffCos (node_t *original_node, char const *diff_var)
     current_node->right->left->node_value.oper = SIN;
     current_node->right->left->parent = NULL;
     current_node->right->left->left = NULL;
-    current_node->right->left->right = NodeCopy (current_node->right);
+    current_node->right->left->right = NodeCopy (original_node->right);
     return current_node;
 }
 

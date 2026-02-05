@@ -87,6 +87,7 @@ node_t *getE (char const **s);
 node_t *getG (char const **s);
 node_t *getF (char const **s);
 node_t *getV (char const **s);
+node_t *getD (char const **s);
 void Destructor (node_t *node);
 
 #endif // SPUSK_FUNC

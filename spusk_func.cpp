@@ -26,11 +26,26 @@ node_t *getP (char const **s)
     else return getF (s);
 }
 
+node_t *getD (char const **s)
+{
+    node_t *value = getP (s); //P->D
+    while (**s == '^')
+    {
+        data oper;
+        if (**s == '^') oper.oper = DEG;
+        (*s)++;
+        node_t *value_2 = getP (s); // P->D
+        node_t *new_node = CreateNode (NULL, value, value_2, OPERATOR, oper);
+        value = new_node;
+    }
+    return value;
+}
+
 node_t *getT (char const **s)
 {
 
-    node_t *value = getP (s);
-    while (**s == '*' || **s == '/' || **s == '^')
+    node_t *value = getD (s); //P->D
+    while (**s == '*' || **s == '/')
     {
         data oper;
         switch (**s)
@@ -41,14 +56,11 @@ node_t *getT (char const **s)
             case '/':
                 oper.oper = DIV;
                 break;
-            case '^':
-                oper.oper = DEG;
-                break;
             default:
                 assert (0);
         }
         (*s)++;
-        node_t *value_2 = getP (s);
+        node_t *value_2 = getD (s); // P->D
         node_t *new_node = CreateNode (NULL, value, value_2, OPERATOR, oper);
         value = new_node;
     }
