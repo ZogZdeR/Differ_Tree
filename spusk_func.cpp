@@ -12,39 +12,40 @@ node_t *CreateNode (node_t *parent, node_t *left, node_t *right, type new_node_t
     return new_node;
 }
 
-node_t *getP (char const **s)
+node_t *GetPart (char const **s)
 {
     node_t *value = NULL;
     if (**s == '(')
     {
         (*s)++;
-        value = getE (s);
+        value = GetExpr (s);
         if (**s != ')') assert (0);
         (*s)++;
         return value;
     }
-    else return getF (s);
+    else return GetFunc (s);
 }
 
-node_t *getD (char const **s)
+node_t *GetDeg (char const **s)
 {
-    node_t *value = getP (s); //P->D
+    node_t *value = GetPart (s);
     while (**s == '^')
     {
         data oper;
+        oper.oper = ADD;
         if (**s == '^') oper.oper = DEG;
         (*s)++;
-        node_t *value_2 = getP (s); // P->D
+        node_t *value_2 = GetPart (s);
         node_t *new_node = CreateNode (NULL, value, value_2, OPERATOR, oper);
         value = new_node;
     }
     return value;
 }
 
-node_t *getT (char const **s)
+node_t *GetTerm (char const **s)
 {
 
-    node_t *value = getD (s); //P->D
+    node_t *value = GetDeg (s); //P->D
     while (**s == '*' || **s == '/')
     {
         data oper;
@@ -60,16 +61,16 @@ node_t *getT (char const **s)
                 assert (0);
         }
         (*s)++;
-        node_t *value_2 = getD (s); // P->D
+        node_t *value_2 = GetDeg (s); // P->D
         node_t *new_node = CreateNode (NULL, value, value_2, OPERATOR, oper);
         value = new_node;
     }
     return value;
 }
 
-node_t *getE (char const **s)
+node_t *GetExpr (char const **s)
 {
-    node_t *value = getT (s);
+    node_t *value = GetTerm (s);
     while (**s == '+' || **s == '-')
     {
         data oper;
@@ -85,14 +86,14 @@ node_t *getE (char const **s)
                 assert (0);
         }
         (*s)++;
-        node_t *value_2 = getT (s);
+        node_t *value_2 = GetTerm (s);
         node_t *new_node = CreateNode (NULL, value, value_2, OPERATOR, oper);
         value = new_node;
     }
     return value;
 }
 
-node_t *getN (char const **s)
+node_t *GetNumb (char const **s)
 {
     bool found_any = false;
     int value = 0;
@@ -112,16 +113,16 @@ node_t *getN (char const **s)
     return new_node;
 }
 
-node_t *getG (char const **s)
+node_t *GetGen (char const **s)
 {
-    node_t *value = getE (s);
+    node_t *value = GetExpr (s);
     if (**s != '$') assert(0);
     return value;
 }
 
-node_t *getF (char const **s)
+node_t *GetFunc (char const **s)
 {
-    if ((**s >= 'a' && **s <= 'z') || (**s >= 'A' && **s <= 'Z') || (**s == '^'))
+    if (isalpha (**s) || (**s == '^'))
     {
         for (size_t i = (size_t)DEG - 1; i < FUNCTIONS_QUANTITY; i++) //starting from deg cause of other func are already checked
         {
@@ -132,28 +133,27 @@ node_t *getF (char const **s)
                 function_realisation.oper = functions_structure[i].oper_enum;
                 (*s) += MyStrlen (functions_structure[i].name);
                 node_t *new_node = CreateNode
-                    (NULL, NULL, getP (s), OPERATOR, function_realisation);//было гетE
+                    (NULL, NULL, GetPart (s), OPERATOR, function_realisation);//было гетE
                 return new_node;
             }
         }
-        return getV (s);
+        return GetVar (s);
     }
-    return getN (s);
+    return GetNumb (s);
 }
 
-node_t *getV (char const **s)
+node_t *GetVar (char const **s)
 {
-    char const **beg = s;
     bool found_any = false;
-    char *var = (char *)calloc (30, 1);
-    if ((**beg >= 'a' && **beg <= 'z') || (**beg >= 'A' && **beg <= 'Z'))
+    char *var = (char *)calloc (ENOUGH_STRING_SIZE, 1);
+    if (isalpha (**s))
     {
         size_t num = 0;
         found_any = true;
         var[num] = **s;
         num += 1;
         (*s) ++;
-        while ((**s >= '0' && **s <= '9') || (**s >= 'a' && **s <= 'z') || (**s >= 'A' && **s <= 'Z'))
+        while (isdigit (**s) || isalpha (**s))
         {  
             var[num] = **s;
             (*s) ++;
@@ -164,7 +164,7 @@ node_t *getV (char const **s)
     if (found_any == false)
     {
         free (var);
-        return getN (s);
+        return GetNumb (s);
     }
     else
     {

@@ -5,17 +5,17 @@
 
 int main ()
 {
-    char const *hui = "COS(15+2*x)$";
-    char const **s = &hui;
-    node_t *tree_hui = getG (s);
-    GraphVizDump (tree_hui);
-    // GraphVizDump (tree_hui);
-    node_t *diff_hui = Differentiation (tree_hui, "x");
-    GraphVizDump (diff_hui);
-    Simplifier (diff_hui);
-    DumpToLaTex (diff_hui);
-    GraphVizDump (diff_hui);
-    Destructor (tree_hui);
-    Destructor (diff_hui);
+    char const *expression = "COS(15+2*x)$";
+    char const **s = &expression;
+    node_t *tree_expression = GetGen (s);
+    GraphVizDump (tree_expression);
+    // GraphVizDump (tree_expression);
+    node_t *diff_expression = Differentiation (tree_expression, "x");
+    GraphVizDump (diff_expression);
+    Simplifier (diff_expression);
+    DumpToLaTex (diff_expression);
+    GraphVizDump (diff_expression);
+    Destructor (tree_expression);
+    Destructor (diff_expression);
     return 0;
 }

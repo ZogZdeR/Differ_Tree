@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "string_functions.hpp"
 
@@ -12,6 +13,8 @@ typedef signed long long int data_t;
 static size_t const FUNCTIONS_QUANTITY = 14;
 
 static size_t const MAX_OPER_VALUE = 7;
+
+static size_t const ENOUGH_STRING_SIZE = 30;
 
 enum type
 {
@@ -51,7 +54,7 @@ struct function_struct_t
     oper_t oper_enum;
 };
 
-function_struct_t static functions_structure[FUNCTIONS_QUANTITY] = // is_used, problem of compiler
+function_struct_t static const functions_structure[FUNCTIONS_QUANTITY] = // is_used, problem of compiler
 {
     "+",     ADD,
     "-",     SUB,
@@ -80,14 +83,14 @@ struct node_t
 };
 
 node_t *CreateNode (node_t *parent, node_t *left, node_t *right, type new_node_type, data new_node_value);
-node_t *getN (char const **s);
-node_t *getP (char const **s);
-node_t *getT (char const **s);
-node_t *getE (char const **s);
-node_t *getG (char const **s);
-node_t *getF (char const **s);
-node_t *getV (char const **s);
-node_t *getD (char const **s);
+node_t *GetNumb (char const **s);
+node_t *GetPart (char const **s);
+node_t *GetTerm (char const **s);
+node_t *GetExpr (char const **s);
+node_t *GetGen (char const **s);
+node_t *GetFunc (char const **s);
+node_t *GetVar (char const **s);
+node_t *GetDeg (char const **s);
 void Destructor (node_t *node);
 
 #endif // SPUSK_FUNC

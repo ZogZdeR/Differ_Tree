@@ -16,7 +16,7 @@ node_t *NodeCopy (node_t *origin)
             break;
         case VARIABLE:
         {
-            char *new_var = (char *)calloc (30, 1);
+            char *new_var = (char *)calloc (ENOUGH_STRING_SIZE, 1);
             MyStrcpy (origin->node_value.variable, new_var);
             new_root->node_value.variable = new_var;
             break;

@@ -4,31 +4,31 @@ char const *graph_dot = "graph.dot";
 
 void GraphVizNodeInitialise (FILE *stream, node_t *node)
 {
-    assert (stream != NULL);
-    assert (node != NULL);
+    assert (stream);
+    assert (node);
 
-    if (node != NULL)
+    if (node->left != NULL) 
+        GraphVizNodeInitialise (stream, node->left);
+    switch (node->node_type)
     {
-        if (node->left != NULL) 
-            GraphVizNodeInitialise (stream, node->left);
-        if (node->node_type == CONST)
-        {
+        case CONST:
             fprintf (stream, "\"Node%p\" [shape = record, style = \"filled\",fillcolor=\"lightgrey\" label = \" { %lld | { <f2> Left | <f3> Right } } \"];\n ", 
                 node, node->node_value.value);
-        }
-        else if (node->node_type == VARIABLE)
-        {
+            break;
+        case VARIABLE:
             fprintf (stream, "\"Node%p\" [shape = record, style = \"filled\",fillcolor=\"lightgrey\" label = \" { %s | { <f2> Left | <f3> Right } } \"];\n ", 
                 node, node->node_value.variable);
-        }
-        else if (node->node_type == OPERATOR)
-        {
+            break;
+        case OPERATOR:
             fprintf (stream, "\"Node%p\" [shape = record, style = \"filled\",fillcolor=\"lightgrey\" label = \" { %s | { <f2> Left | <f3> Right } } \"];\n ", 
                 node, functions_structure[node->node_value.oper - 1].name);
-        }
-        if (node->right != NULL) 
-            GraphVizNodeInitialise (stream, node->right);
-    }
+            break;
+        default:
+            assert (0);
+            break;
+    };
+    if (node->right != NULL) 
+        GraphVizNodeInitialise (stream, node->right);
 }
 
 void GraphVizRoadsInitialise (FILE *stream, node_t *node)
