@@ -97,129 +97,57 @@ node_t *Differentiation (node_t *origin, char const *diff_var)
 
 node_t *DiffLin (node_t *original_node, char const *diff_var)
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    if (original_node->node_value.oper == ADD)
-    {
-        current_node->node_type = OPERATOR;
-        current_node->node_value.oper = ADD;
-        current_node->left = Differentiation (original_node->left, diff_var);
-        current_node->right = Differentiation (original_node->right, diff_var);
-    }
-    else
-    {
-        current_node->node_type = OPERATOR;
-        current_node->node_value.oper = SUB;
-        current_node->left = Differentiation (original_node->left, diff_var);
-        current_node->right = Differentiation (original_node->right, diff_var);
-    }
+    node_t *current_node = NULL;
+    if (original_node->node_value.oper == ADD) current_node = OperMaker (ADD, 
+        Differentiation (original_node->left, diff_var), Differentiation (original_node->right, diff_var));
+    else current_node = OperMaker (DIV, 
+        Differentiation (original_node->left, diff_var), Differentiation (original_node->right, diff_var));
     return current_node;
 }
 
 node_t *DiffMul (node_t *original_node, char const *diff_var)
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    current_node->node_type = OPERATOR;
-    current_node->node_value.oper = ADD;
-    current_node->left = (node_t *)calloc (1, sizeof (node_t));
-    current_node->left->node_type = OPERATOR;
-    current_node->left->node_value.oper = MUL;
-    current_node->left->parent = NULL;
-    current_node->left->left = NodeCopy (original_node->left);
-    current_node->left->right = Differentiation (original_node->right, diff_var);
-
-    current_node->right = (node_t *)calloc (1, sizeof (node_t));
-    current_node->right->node_type = OPERATOR;
-    current_node->right->node_value.oper = MUL;
-    current_node->right->parent = NULL;
-    current_node->right->left = Differentiation (original_node->left, diff_var);
-    current_node->right->right = NodeCopy (original_node->right);
+    node_t *current_node = OperMaker (ADD, OperMaker (MUL, 
+        NodeCopy (original_node->left), Differentiation (original_node->right, diff_var)), 
+        OperMaker (MUL, Differentiation (original_node->left, diff_var), NodeCopy (original_node->right)));
     return current_node;
 }
 
-node_t *DiffDiv (node_t *original_node, char const*diff_var)
+node_t *DiffDiv (node_t *original_node, char const *diff_var)
 {
     assert (original_node != NULL);
 
-    node_t *new_root = (node_t *)calloc (1, sizeof (node_t));
-    new_root->node_type = OPERATOR;
-    new_root->node_value.oper = DIV;
-    new_root->parent = NULL;
-    new_root->right = (node_t *)calloc (1, sizeof (node_t));
-    new_root->left = (node_t *)calloc (1, sizeof (node_t));
-    new_root->right->node_type = OPERATOR;
-    new_root->right->node_value.oper = MUL;
-    new_root->right->parent = NULL;
-    new_root->right->right = NodeCopy (original_node->right);
-    new_root->right->left = NodeCopy (original_node->right);
-
-    new_root->left->node_type = OPERATOR;
-    new_root->left->node_value.oper = SUB;
-    new_root->left->parent = NULL;
-
-    new_root->left->left = (node_t *)calloc (1, sizeof (node_t));
-    new_root->left->left->node_type = OPERATOR;
-    new_root->left->left->node_value.oper = MUL;
-    new_root->left->left->parent = NULL;
-    new_root->left->left->left = Differentiation (original_node->left, diff_var);
-    new_root->left->left->right = NodeCopy (original_node->right);
-
-    new_root->left->right = (node_t *)calloc (1, sizeof (node_t));
-    new_root->left->right->node_type = OPERATOR;
-    new_root->left->right->node_value.oper = MUL;
-    new_root->left->right->parent = NULL;
-    new_root->left->right->left = Differentiation (original_node->right, diff_var);
-    new_root->left->right->right = NodeCopy (original_node->left);
-    return new_root;
+    node_t *current_node = OperMaker (DIV, 
+        OperMaker (SUB, 
+            OperMaker (MUL, Differentiation (original_node->left, diff_var), NodeCopy (original_node->right)), 
+            OperMaker (MUL, Differentiation (original_node->right, diff_var), NodeCopy (original_node->left))), 
+        OperMaker (MUL, NodeCopy (original_node->right), NodeCopy (original_node->right)));
+    return current_node;
 }
 
 node_t *DiffSin (node_t *original_node, char const*diff_var)
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    current_node->node_type = OPERATOR;
-    current_node->node_value.oper = MUL;
-
-    current_node->left = (node_t *)calloc (1, sizeof (node_t));
-    current_node->left->node_type = OPERATOR;
-    current_node->left->node_value.oper = COS;
-    current_node->left->parent = NULL;
-    current_node->left->right = NodeCopy (original_node->right);
-    current_node->left->left = NULL;
-
-    current_node->right = Differentiation (original_node->right, diff_var);
+    node_t *current_node = OperMaker (MUL, 
+        OperMaker (COS, NULL, NodeCopy (original_node->right)),
+        Differentiation (original_node->right, diff_var));
     return current_node;
 }
 
 node_t *DiffCos (node_t *original_node, char const *diff_var)
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    current_node->node_type = OPERATOR;
-    current_node->node_value.oper = MUL;
-    
-    current_node->left = ConstMaker (-1);
-
-    current_node->right = (node_t *)calloc (1, sizeof (node_t));
-    current_node->right->node_type = OPERATOR;
-    current_node->right->node_value.oper = MUL;
-    current_node->right->parent = NULL;
-    current_node->right->right = Differentiation (original_node->right, diff_var);
-
-    current_node->right->left = (node_t *)calloc (1, sizeof (node_t));
-    current_node->right->left->node_type = OPERATOR;
-    current_node->right->left->node_value.oper = SIN;
-    current_node->right->left->parent = NULL;
-    current_node->right->left->left = NULL;
-    current_node->right->left->right = NodeCopy (original_node->right);
+    node_t *current_node = OperMaker (MUL, 
+        ConstMaker (-1), 
+        OperMaker (MUL, 
+            OperMaker (SIN, NULL, NodeCopy (original_node->right)), 
+            Differentiation (original_node->right, diff_var)));
     return current_node;
 }
 
 node_t *DiffExp (node_t *original_node, char const *diff_var)
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    current_node->node_type = OPERATOR;
-    current_node->node_value.oper = MUL;
-    current_node->parent = NULL;
-    current_node->left = NodeCopy (original_node);
-    current_node->right = Differentiation (original_node->right, diff_var);
+    node_t *current_node = OperMaker (MUL, 
+        NodeCopy (original_node),
+        Differentiation (original_node->right, diff_var));
     return current_node;
 }
 
@@ -227,7 +155,7 @@ node_t *DiffVar (node_t *original_node, char const *differ_var)
 {
     if (MyStrncmp (original_node->node_value.variable, differ_var, (size_t)MyStrlen (differ_var)) != 0) 
     {
-        return NodeCopy (original_node);
+        return ConstMaker (0);
     }
     else 
     {
@@ -242,144 +170,70 @@ node_t *DiffConst ()
 
 node_t *DiffTan (node_t *original_node, char const *diff_var)
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    current_node->node_type = OPERATOR;
-    current_node->node_value.oper = MUL;
-
-    current_node->left = (node_t *)calloc (1, sizeof (node_t));
-    current_node->left->node_type = OPERATOR;
-    current_node->left->node_value.oper = DIV;
-    current_node->left->parent = NULL;
-    current_node->left->left = ConstMaker (1);
-    current_node->left->right = (node_t *)calloc (1, sizeof (node_t));
-
-    current_node->left->right->node_type = OPERATOR;
-    current_node->left->right->node_value.oper = MUL;
-    current_node->left->right->parent = NULL;
-    current_node->left->right->right = (node_t *)calloc (1, sizeof (node_t));
-    current_node->left->right->left = (node_t *)calloc (1, sizeof (node_t));
-
-    current_node->left->right->left->node_type = OPERATOR;
-    current_node->left->right->left->node_value.oper = COS;
-    current_node->left->right->left->parent = NULL;
-    current_node->left->right->left->right = NodeCopy (original_node->right);
-    current_node->left->right->left->left = NULL;
-
-    current_node->left->right->right->node_type = OPERATOR;
-    current_node->left->right->right->node_value.oper = COS;
-    current_node->left->right->right->parent = NULL;
-    current_node->left->right->right->right = NodeCopy (original_node->right);
-    current_node->left->right->right->left = NULL;
-
-    current_node->right = Differentiation (original_node->right, diff_var);
+    node_t *current_node = OperMaker (MUL,
+    OperMaker (DIV,
+        ConstMaker (1),
+        OperMaker (MUL,
+            OperMaker (COS, NULL, NodeCopy (original_node->right)),
+            OperMaker (COS, NULL, NodeCopy (original_node->right)))),
+        Differentiation (original_node->right, diff_var));
+        
     return current_node; 
 }
 
 node_t *DiffCTan (node_t *original_node, char const *diff_var)
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    current_node->node_type = OPERATOR;
-    current_node->node_value.oper = MUL;
+    node_t *current_node = OperMaker (MUL,
+    OperMaker (DIV,
+        ConstMaker (-1),
+        OperMaker (MUL,
+            OperMaker (SIN, NULL, NodeCopy (original_node->right)),
+            OperMaker (SIN, NULL, NodeCopy (original_node->right)))),
+    Differentiation (original_node->right, diff_var));
 
-    current_node->left = (node_t *)calloc (1, sizeof (node_t));
-    current_node->left->node_type = OPERATOR;
-    current_node->left->node_value.oper = DIV;
-    current_node->left->parent = NULL;
-    current_node->left->left = ConstMaker (-1);
-    current_node->left->right = (node_t *)calloc (1, sizeof (node_t));
-
-    current_node->left->right->node_type = OPERATOR;
-    current_node->left->right->node_value.oper = MUL;
-    current_node->left->right->parent = NULL;
-    current_node->left->right->right = (node_t *)calloc (1, sizeof (node_t));
-    current_node->left->right->left = (node_t *)calloc (1, sizeof (node_t));
-
-    current_node->left->right->left->node_type = OPERATOR;
-    current_node->left->right->left->node_value.oper = SIN;
-    current_node->left->right->left->parent = NULL;
-    current_node->left->right->left->right = NodeCopy (original_node->right);
-    current_node->left->right->left->left = NULL;
-
-    current_node->left->right->right->node_type = OPERATOR;
-    current_node->left->right->right->node_value.oper = SIN;
-    current_node->left->right->right->parent = NULL;
-    current_node->left->right->right->right = NodeCopy (original_node->right);
-    current_node->left->right->right->left = NULL;
-
-    current_node->right = Differentiation (original_node->right, diff_var);
     return current_node; 
 }
 
 node_t *DiffLn (node_t *original_node, char const *diff_var)
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    current_node->node_type = OPERATOR;
-    current_node->node_value.oper = MUL;
-    current_node->parent = NULL;
-    current_node->left = (node_t *)calloc (1, sizeof (node_t));
+    node_t *current_node = OperMaker (MUL, 
+        OperMaker (DIV,
+            ConstMaker (1),
+            NodeCopy (original_node->right)),
+        Differentiation (original_node->right, diff_var));
 
-    current_node->left->node_type = OPERATOR;
-    current_node->left->node_value.oper = DIV;
-    current_node->left->parent = NULL;
-    current_node->left->left = ConstMaker (1);
-    current_node->left->right = NodeCopy (original_node->right);
-
-    current_node->right = Differentiation (original_node->right, diff_var); 
     return (current_node);
 }
 
 node_t *DiffDeg (node_t *original_node, char const *diff_var)
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    current_node->node_type = OPERATOR;
-    current_node->node_value.oper = MUL;
-    current_node->parent = NULL;
-    current_node->left = NodeCopy (original_node);
-    current_node->right = NULL; // Initialising soon
+    node_t *degree = OperMaker (MUL,
+        OperMaker (LN, NULL, NodeCopy (original_node->left)),
+        NodeCopy (original_node->right));
 
-    node_t *degree = (node_t *)calloc (1, sizeof (node_t));
-    degree->node_type = OPERATOR;
-    degree->node_value.oper = MUL;
-    degree->parent = NULL;
-    degree->right = NodeCopy (original_node->right);
-    degree->left = (node_t *)calloc (1, sizeof (node_t));
-    degree->left->node_type = OPERATOR;
-    degree->left->node_value.oper = LN;
-    degree->left->parent = NULL;
-    degree->left->left = NULL;
-    degree->left->right = NodeCopy (original_node->left);
-
-    node_t *diff_degree = Differentiation (degree, diff_var);
-    current_node->right = diff_degree;
+    node_t *current_node = OperMaker (MUL,
+        NodeCopy (original_node),
+        Differentiation (degree, diff_var));
     Destructor (degree);
+
     return (current_node);
 }
 
 node_t *DiffATan (node_t *original_node, char const *diff_var)
 {
-    node_t *current_node = (node_t *)calloc (1, sizeof (node_t));
-    current_node->left = Differentiation (original_node->right, diff_var);
-    current_node->node_type = OPERATOR;
-    current_node->node_value.oper = MUL;
-    current_node->parent = NULL;
-    current_node->right = (node_t *)calloc (1, sizeof (node_t));
-
-    current_node->right->node_type = OPERATOR;
-    current_node->right->node_value.oper = DIV;
-    current_node->right->parent = NULL;
-    current_node->right->left = ConstMaker (1);
-    current_node->right->right = (node_t *)calloc (1, sizeof (node_t));
-
-    current_node->right->right->node_type = OPERATOR;
-    current_node->right->right->node_value.oper = ADD;
-    current_node->right->right->parent = NULL;
-    current_node->right->right->left = ConstMaker (1);
-    current_node->right->right->right = (node_t *)calloc (1, sizeof (node_t));
-    current_node->right->right->right->node_type = OPERATOR;
-    current_node->right->right->right->node_value.oper = DEG;
-    current_node->right->right->right->parent = NULL;
-    current_node->right->right->right->right = ConstMaker (2);
-    current_node->right->right->right->left = NodeCopy (original_node->right);
+    node_t *current_node = OperMaker (MUL,
+        Differentiation (original_node->right, diff_var),
+        OperMaker (DIV,
+            ConstMaker (1),
+            OperMaker (ADD, 
+                ConstMaker (1),
+                OperMaker (DEG,
+                    NodeCopy (original_node->right),
+                    ConstMaker (2)
+                )
+            )
+        )
+    );
     return (current_node);
 }
 
@@ -394,6 +248,30 @@ node_t *ConstMaker (data_t constant)
     node->left = NULL;
     return node;
 }
+
+node_t *OperMaker (oper_t oper, node_t *left, node_t *right)
+{
+    node_t *node = (node_t *)calloc (1, sizeof (node_t));
+    node->node_type = OPERATOR;
+    node->node_value.oper = oper;
+    node->parent = NULL;
+    node->right = right;
+    node->left = left;
+    return node;
+}
+
+node_t *VarMaker (char const *var, node_t *left, node_t *right)
+{
+    node_t *node = (node_t *)calloc (1, sizeof (node_t));
+    node->node_type = VARIABLE;
+    node->node_value.variable = (char *)calloc (ENOUGH_STRING_SIZE, 1);
+    MyStrncpy (var, node->node_value.variable, MyStrlen (var));
+    node->parent = NULL;
+    node->right = right;
+    node->left = left;
+    return node;
+}
+
 void Simplifier (node_t *node)
 {
     assert (node != NULL);
